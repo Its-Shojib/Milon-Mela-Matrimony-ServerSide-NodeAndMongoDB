@@ -37,18 +37,72 @@ async function run() {
         const reviewCollections = client.db("Milon-Mela-DB").collection('Reviews');
         const favoriteCollections = client.db("Milon-Mela-DB").collection('Favorites');
         const paymentCollections = client.db("Milon-Mela-DB").collection('Payments');
+        const biodataCollections = client.db("Milon-Mela-DB").collection('Biodatas');
 
-        // user related api
+
+
+        // middlewares verify token
+        const verifyToken = (req, res, next) => {
+            console.log('inside verify token', req.headers.authorization);
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: 'unauthorized access' });
+            }
+            const token = req.headers.authorization.split(' ')[1];
+            jwt.verify(token, process.env.ACCESS_TOKEN_PASS, (err, decoded) => {
+                if (err) {
+                    return res.status(401).send({ message: 'unauthorized access' })
+                }
+                req.decoded = decoded;
+                next();
+            })
+        }
+
+        // use verify admin after verifyToken
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollections.findOne(query);
+            const isAdmin = user?.role === 'admin';
+            if (!isAdmin) {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+            next();
+        }
+
+
+        //jwt related api
+        app.post('/jwt', async (req, res) => {
+            let user = req.body;
+            let token = jwt.sign(user, process.env.ACCESS_TOKEN_PASS, { expiresIn: '1h' });
+            res.send({ token })
+        })
+
+        //check user admin or not
+        app.get('/users/admin/:email', verifyToken, async (req, res) => {
+            let userEmail = req.params.email;
+            if (userEmail !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
+            let query = { email: userEmail };
+            let user = await userCollections.findOne(query);
+            let admin = false;
+            if (user) {
+                admin = user?.role === 'admin'
+            }
+            res.send({ admin });
+        })
+
+        // user related api (create user)
         app.post('/users', async (req, res) => {
             let newUser = req.body;
             let query = { email: newUser.email };
             let existingUser = await userCollections.findOne(query);
             if (existingUser) {
-              return res.send({ message: 'User already exist', insertedId: null });
+                return res.send({ message: 'User already exist', insertedId: null });
             }
             let result = await userCollections.insertOne(newUser);
             res.send(result)
-          })
+        })
 
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
