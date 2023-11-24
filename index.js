@@ -105,6 +105,72 @@ async function run() {
         })
 
 
+        //biodata related api
+        app.patch('/edit-biodata/:email', async (req, res) => {
+            let email = req.params.email;
+            let biodata = req.body;
+            const options = { upsert: true };
+            let query = { email: email };
+            let existingUser = await biodataCollections.findOne(query);
+            console.log(existingUser);
+            if (existingUser) {
+                updatedDoc = {
+                    $set: {
+                        Name: biodata.Name,
+                        Image: biodata.Image,
+                        Gender: biodata.Gender,
+                        Dob: biodata.Dob,
+                        Height: biodata.Height,
+                        Weight: biodata.Weight,
+                        Age: biodata.Age,
+                        Ocupation: biodata.Ocupation,
+                        Race: biodata.Race,
+                        FaName: biodata.FaName,
+                        MoName: biodata.MoName,
+                        PermanentDiv: biodata.PermanentDiv,
+                        PresentDiv: biodata.PresentDiv,
+                        PartnerAgeExp: biodata.PartnerAgeExp,
+                        PartnerHeightExp: biodata.PartnerHeightExp,
+                        PartnerWeightExp: biodata.PartnerWeightExp,
+                        email: biodata.email,
+                        Mobile: biodata.Mobile,
+                    }
+                }
+                let result = await biodataCollections.updateOne(query,updatedDoc);
+                res.send(result);
+            }
+            else {
+                let count = await biodataCollections.estimatedDocumentCount();
+                console.log(count);
+                let updatedDoc2 = {
+                    $set: {
+                        bioId: count + 1,
+                        Name: biodata.Name,
+                        Image: biodata.Image,
+                        Gender: biodata.Gender,
+                        Dob: biodata.Dob,
+                        Height: biodata.Height,
+                        Weight: biodata.Weight,
+                        Age: biodata.Age,
+                        Ocupation: biodata.Ocupation,
+                        Race: biodata.Race,
+                        FaName: biodata.FaName,
+                        MoName: biodata.MoName,
+                        PermanentDiv: biodata.PermanentDiv,
+                        PresentDiv: biodata.PresentDiv,
+                        PartnerAgeExp: biodata.PartnerAgeExp,
+                        PartnerHeightExp: biodata.PartnerHeightExp,
+                        PartnerWeightExp: biodata.PartnerWeightExp,
+                        email: biodata.email,
+                        Mobile: biodata.Mobile,
+                    }
+                }
+                let result = await biodataCollections.updateOne(query,updatedDoc2, options);
+                res.send(result);
+            }
+        })
+
+
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
