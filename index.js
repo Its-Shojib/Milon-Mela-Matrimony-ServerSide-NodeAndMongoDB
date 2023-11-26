@@ -209,6 +209,7 @@ async function run() {
 
 
         // Premium Acount Related Api
+        // Request for premium
         app.post('/makePremiumRequest/:email', async (req, res) => {
             let email = req.params.email;
             let query = { Email: email };
@@ -222,6 +223,26 @@ async function run() {
                 res.send(result);
             }
         })
+
+        // Load All requested premium user
+        app.get('/premiumReqUser', async(req,res)=>{
+            let result = await premiumRequestCollections.find().toArray();
+            res.send(result);
+        })
+
+
+        // Make Acount Premium
+        app.patch('/biodata/premium/:email', async (req, res) => {
+            let email = req.params.email;
+            let query = { email: email };
+            let updatedDoc = {
+              $set: {
+                role: 'premium'
+              }
+            }
+            let result = await biodataCollections.updateOne(query, updatedDoc);
+            res.send(result)
+          })
 
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
