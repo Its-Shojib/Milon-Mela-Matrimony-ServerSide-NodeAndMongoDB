@@ -116,6 +116,7 @@ async function run() {
         })
 
         // ================================User Related API=============================
+        // Create new user
         app.post('/users', async (req, res) => {
             let newUser = req.body;
             let query = { email: newUser.email };
@@ -125,6 +126,12 @@ async function run() {
             }
             let result = await userCollections.insertOne(newUser);
             res.send(result)
+        });
+
+        // Load All User for Admin 
+        app.get('/allUser', async(req,res)=>{
+            let result = await userCollections.find().toArray();
+            res.send(result);
         })
         // ================================End User Related API==========================
 
