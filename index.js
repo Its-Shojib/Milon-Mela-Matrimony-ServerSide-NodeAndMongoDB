@@ -38,6 +38,7 @@ async function run() {
         const favoriteCollections = client.db("Milon-Mela-DB").collection('Favorites');
         const paymentCollections = client.db("Milon-Mela-DB").collection('Payments');
         const biodataCollections = client.db("Milon-Mela-DB").collection('Biodatas');
+        const premiumRequestCollections = client.db("Milon-Mela-DB").collection('PremiumReq');
 
 
 
@@ -106,6 +107,7 @@ async function run() {
 
 
         //biodata related api
+        // Edit Biodata
         app.patch('/edit-biodata/:email', async (req, res) => {
             let email = req.params.email;
             let biodata = req.body;
@@ -136,7 +138,7 @@ async function run() {
                         Mobile: biodata.Mobile,
                     }
                 }
-                let result = await biodataCollections.updateOne(query,updatedDoc);
+                let result = await biodataCollections.updateOne(query, updatedDoc);
                 res.send(result);
             }
             else {
@@ -165,7 +167,33 @@ async function run() {
                         Mobile: biodata.Mobile,
                     }
                 }
-                let result = await biodataCollections.updateOne(query,updatedDoc2, options);
+                let result = await biodataCollections.updateOne(query, updatedDoc2, options);
+                res.send(result);
+            }
+        })
+
+        //View biodata
+        app.get('/biodata', async (req, res) => {
+            let email = req.query.email;
+            let query = { email: email };
+            let result = await biodataCollections.findOne(query);
+            res.send(result);
+        });
+
+
+
+
+        // Premium Acount Related Api
+        app.post('/makePremiumRequest/:email', async (req, res) => {
+            let email = req.params.email;
+            let query = { Email: email };
+            let existingReq = await premiumRequestCollections.findOne(query);
+            if (existingReq) {
+                return res.send({"message": 'Already exist' });
+            }
+            else {
+                let premiumInfo = req.body;
+                let result = await premiumRequestCollections.insertOne(premiumInfo);
                 res.send(result);
             }
         })
