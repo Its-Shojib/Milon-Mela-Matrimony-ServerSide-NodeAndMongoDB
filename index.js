@@ -70,16 +70,16 @@ async function run() {
             next();
         }
         // use verify Premium after verifyToken
-        const verifyPremium = async (req, res, next) => {
-            const email = req.decoded.email;
-            const query = { email: email };
-            const user = await userCollections.findOne(query);
-            const isPremium = user?.role === 'premium';
-            if (!isPremium) {
-                return res.status(403).send({ message: 'forbidden access' });
-            }
-            next();
-        }
+        // const verifyPremium = async (req, res, next) => {
+        //     const email = req.decoded.email;
+        //     const query = { email: email };
+        //     const user = await biodataCollections.findOne(query);
+        //     const isPremium = user?.role === 'premium';
+        //     if (!isPremium) {
+        //         return res.status(403).send({ message: 'forbidden access' });
+        //     }
+        //     next();
+        // }
 
 
         //jwt related api
@@ -89,7 +89,7 @@ async function run() {
             res.send({ token })
         })
 
-        //check user admin or not
+        // ===============================Check Admin===================================
         app.get('/users/admin/:email', verifyToken, async (req, res) => {
             let userEmail = req.params.email;
             if (userEmail !== req.decoded.email) {
@@ -103,14 +103,11 @@ async function run() {
             }
             res.send({ admin });
         })
-        //check user premium or not
-        app.get('/users/premium/:email', verifyToken, async (req, res) => {
+        // ===============================Check Premium=================================
+        app.get('/users/premium/:email', async (req, res) => {
             let userEmail = req.params.email;
-            if (userEmail !== req.decoded.email) {
-                return res.status(403).send({ message: 'forbidded access' })
-            }
             let query = { email: userEmail };
-            let user = await userCollections.findOne(query);
+            let user = await biodataCollections.findOne(query);
             let premium = false;
             if (user) {
                 premium = user?.role === 'premium'
@@ -118,7 +115,7 @@ async function run() {
             res.send({ premium });
         })
 
-        // user related api (create user)
+        // ================================User Related API=============================
         app.post('/users', async (req, res) => {
             let newUser = req.body;
             let query = { email: newUser.email };
@@ -129,10 +126,18 @@ async function run() {
             let result = await userCollections.insertOne(newUser);
             res.send(result)
         })
+        // ================================End User Related API==========================
 
 
-        //biodata related api
-        // Edit Biodata
+
+
+
+
+
+
+
+        // ================================Biodata Related API==========================
+        // Edit Biodata section
         app.patch('/edit-biodata/:email', async (req, res) => {
             let email = req.params.email;
             let biodata = req.body;
@@ -197,9 +202,10 @@ async function run() {
             }
         })
 
-        app.get('/biodata/profile/:id',async(req,res)=>{
+        //Goto View ProfilePage
+        app.get('/biodata/profile/:id', async (req, res) => {
             let id = req.params.id;
-            let query = {_id: new ObjectId(id)};
+            let query = { _id: new ObjectId(id) };
             let result = await biodataCollections.findOne(query);
             res.send(result)
         })
@@ -212,24 +218,41 @@ async function run() {
             res.send(result);
         });
 
-        //Biodata Collection Load All Biodata
+        //Biodata Collection Load All Biodata(useBiodata)
         app.get('/biodata', async (req, res) => {
             let result = await biodataCollections.find().toArray();
             res.send(result);
         });
 
-
-        //View Premium Card in Home section
+        //View Premium Biodata in Home section
         app.get('/biodata/premium', async (req, res) => {
             let query = { role: 'premium' };
             let result = await biodataCollections.find(query).limit(6).sort({ Age: 1 }).toArray();
             res.send(result);
         });
 
+        // Make Acount Premium
+        app.patch('/biodata/premium/:email', async (req, res) => {
+            let email = req.params.email;
+            let query = { email: email };
+            let updatedDoc = {
+                $set: {
+                    role: 'premium'
+                }
+            }
+            let result = await biodataCollections.updateOne(query, updatedDoc);
+            res.send(result);
+        });
+
+        // ============================End Biodata Related API=====================
 
 
 
-        // Premium Acount Related Api
+
+
+
+
+        // ============================Premium Acount Related API===================
         // Request for premium
         app.post('/makePremiumRequest/:email', async (req, res) => {
             let email = req.params.email;
@@ -245,25 +268,46 @@ async function run() {
             }
         })
 
-        // Load All requested premium user
+        // Load All requested premium user(for admin)
         app.get('/premiumReqUser', async (req, res) => {
             let result = await premiumRequestCollections.find().toArray();
             res.send(result);
         })
-
-
-        // Make Acount Premium
-        app.patch('/biodata/premium/:email', async (req, res) => {
+        app.delete('/premiumReqDelete/:email', async (req,res)=>{
             let email = req.params.email;
-            let query = { email: email };
-            let updatedDoc = {
-                $set: {
-                    role: 'premium'
-                }
-            }
-            let result = await biodataCollections.updateOne(query, updatedDoc);
+            let query = {Email: email};
+            let result = await premiumRequestCollections.deleteOne(query);
+            res.send(result);
+        })
+        // ============================End Premium Acount Related API===================
+
+
+
+
+        // ============================Favorite Biodata Related API👇===================
+        //Add to favorite item
+        app.post('/favorite', async (req, res) => {
+            let favoriteBio = req.body;
+            let result = await favoriteCollections.insertOne(favoriteBio);
+            res.send(result)
+        })
+
+        //Load my Favorite Biodata
+        app.get('/favoriteBioData/:email', async (req, res) => {
+            let email = req.params.email;
+            let query = { Email: email };
+            let result = await favoriteCollections.find(query).toArray();
             res.send(result);
         });
+
+        //Delete from Favorite Biodata
+        app.delete('/favoriteDelete/:id', async(req,res)=>{
+            let id = req.params.id;
+            let query = {_id : new ObjectId(id)};
+            let result = await favoriteCollections.deleteOne(query);
+            res.send(result);
+        });
+        // ============================End of Favorite Biodata Related API👆===================
 
 
 
