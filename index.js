@@ -69,6 +69,17 @@ async function run() {
             }
             next();
         }
+        // use verify Premium after verifyToken
+        const verifyPremium = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollections.findOne(query);
+            const isPremium = user?.role === 'premium';
+            if (!isPremium) {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+            next();
+        }
 
 
         //jwt related api
@@ -91,6 +102,20 @@ async function run() {
                 admin = user?.role === 'admin'
             }
             res.send({ admin });
+        })
+        //check user premium or not
+        app.get('/users/premium/:email', verifyToken, async (req, res) => {
+            let userEmail = req.params.email;
+            if (userEmail !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
+            let query = { email: userEmail };
+            let user = await userCollections.findOne(query);
+            let premium = false;
+            if (user) {
+                premium = user?.role === 'premium'
+            }
+            res.send({ premium });
         })
 
         // user related api (create user)
@@ -189,7 +214,7 @@ async function run() {
             let query = { Email: email };
             let existingReq = await premiumRequestCollections.findOne(query);
             if (existingReq) {
-                return res.send({"message": 'Already exist' });
+                return res.send({ "message": 'Already exist' });
             }
             else {
                 let premiumInfo = req.body;
