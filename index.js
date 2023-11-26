@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 5000
@@ -197,11 +197,32 @@ async function run() {
             }
         })
 
-        //View biodata
-        app.get('/biodata', async (req, res) => {
+        app.get('/biodata/profile/:id',async(req,res)=>{
+            let id = req.params.id;
+            let query = {_id: new ObjectId(id)};
+            let result = await biodataCollections.findOne(query);
+            res.send(result)
+        })
+
+        //View biodata in Dashboard section
+        app.get('/viewBiodata', async (req, res) => {
             let email = req.query.email;
             let query = { email: email };
             let result = await biodataCollections.findOne(query);
+            res.send(result);
+        });
+
+        //Biodata Collection Load All Biodata
+        app.get('/biodata', async (req, res) => {
+            let result = await biodataCollections.find().toArray();
+            res.send(result);
+        });
+
+
+        //View Premium Card in Home section
+        app.get('/biodata/premium', async (req, res) => {
+            let query = { role: 'premium' };
+            let result = await biodataCollections.find(query).limit(6).sort({ Age: 1 }).toArray();
             res.send(result);
         });
 
@@ -225,7 +246,7 @@ async function run() {
         })
 
         // Load All requested premium user
-        app.get('/premiumReqUser', async(req,res)=>{
+        app.get('/premiumReqUser', async (req, res) => {
             let result = await premiumRequestCollections.find().toArray();
             res.send(result);
         })
@@ -236,13 +257,14 @@ async function run() {
             let email = req.params.email;
             let query = { email: email };
             let updatedDoc = {
-              $set: {
-                role: 'premium'
-              }
+                $set: {
+                    role: 'premium'
+                }
             }
             let result = await biodataCollections.updateOne(query, updatedDoc);
-            res.send(result)
-          })
+            res.send(result);
+        });
+
 
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
