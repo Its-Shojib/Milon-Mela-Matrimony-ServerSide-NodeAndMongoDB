@@ -350,7 +350,7 @@ async function run() {
 
         //Load Success Story
         app.get('/successStory', async (req, res) => {
-            let result = await reviewCollections.find().toArray();
+            let result = await reviewCollections.find().sort({ marrigeInDays: 1 }).toArray();
             res.send(result);
         })
 
