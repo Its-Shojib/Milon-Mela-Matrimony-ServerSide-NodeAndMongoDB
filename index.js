@@ -342,9 +342,15 @@ async function run() {
         // =============================SuccessStory Related Api👇===============================
 
         //Add Success story
-        app.post('/successStory',async(req,res)=>{
+        app.post('/successStory', async (req, res) => {
             let successStory = req.body;
             let result = await reviewCollections.insertOne(successStory);
+            res.send(result);
+        })
+
+        //Load Success Story
+        app.get('/successStory', async (req, res) => {
+            let result = await reviewCollections.find().toArray();
             res.send(result);
         })
 
