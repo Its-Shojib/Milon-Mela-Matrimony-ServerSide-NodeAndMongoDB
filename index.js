@@ -115,7 +115,14 @@ async function run() {
             res.send({ premium });
         })
 
-        // ================================User Related API=============================
+
+
+
+
+
+
+
+        // ================================User Related API👇=============================
         // Create new user
         app.post('/users', async (req, res) => {
             let newUser = req.body;
@@ -129,24 +136,24 @@ async function run() {
         });
 
         // Load All User for Admin 
-        app.get('/allUser', async(req,res)=>{
+        app.get('/allUser', async (req, res) => {
             let result = await userCollections.find().toArray();
             res.send(result);
         })
 
         //Make a user to Admin
-        app.patch('/user/admin/:email',async (req, res) => {
+        app.patch('/user/admin/:email', async (req, res) => {
             let email = req.params.email;
             let query = { email: email };
             let updatedDoc = {
-              $set: {
-                role: 'admin'
-              }
+                $set: {
+                    role: 'admin'
+                }
             }
             let result = await userCollections.updateOne(query, updatedDoc);
             res.send(result)
-          })
-        // ================================End User Related API==========================
+        })
+        // ================================End of User Related API👆==========================
 
 
 
@@ -293,9 +300,10 @@ async function run() {
             let result = await premiumRequestCollections.find().toArray();
             res.send(result);
         })
-        app.delete('/premiumReqDelete/:email', async (req,res)=>{
+        //Delete Premium Request
+        app.delete('/premiumReqDelete/:email', async (req, res) => {
             let email = req.params.email;
-            let query = {Email: email};
+            let query = { Email: email };
             let result = await premiumRequestCollections.deleteOne(query);
             res.send(result);
         })
@@ -304,7 +312,7 @@ async function run() {
 
 
 
-        // ============================Favorite Biodata Related API👇===================
+        // ============================Favorite Related API👇===================
         //Add to favorite item
         app.post('/favorite', async (req, res) => {
             let favoriteBio = req.body;
@@ -321,14 +329,28 @@ async function run() {
         });
 
         //Delete from Favorite Biodata
-        app.delete('/favoriteDelete/:id', async(req,res)=>{
+        app.delete('/favoriteDelete/:id', async (req, res) => {
             let id = req.params.id;
-            let query = {_id : new ObjectId(id)};
+            let query = { _id: new ObjectId(id) };
             let result = await favoriteCollections.deleteOne(query);
             res.send(result);
         });
         // ============================End of Favorite Biodata Related API👆===================
 
+
+
+        // =============================SuccessStory Related Api👇===============================
+
+        //Add Success story
+        app.post('/successStory',async(req,res)=>{
+            let successStory = req.body;
+            let result = await reviewCollections.insertOne(successStory);
+            res.send(result);
+        })
+
+
+
+        // =========================End Of SuccessStory Related Api👆============================
 
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
