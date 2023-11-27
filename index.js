@@ -9,7 +9,7 @@ let jwt = require('jsonwebtoken');
 
 app.use(cors({
     origin: [
-        'http://localhost:5173',
+        'http://localhost:5173', 'https://milon-mela-matrimony.netlify.app',
     ],
     credentials: true
 }))
@@ -270,6 +270,21 @@ async function run() {
             let result = await biodataCollections.updateOne(query, updatedDoc);
             res.send(result);
         });
+
+        //load biodata for going checkout page
+        app.get('/checkout/:id', async (req, res) => {
+            let id = req.params.id;
+            let query = { _id: new ObjectId(id) };
+            let result = await biodataCollections.findOne(query);
+            res.send(result);
+        });
+
+        app.get('/biodata/checkout/:email', async (req, res) => {
+            let email = req.params.email;
+            let query = { email: email };
+            let result = await biodataCollections.findOne(query);
+            res.send(result);
+        })
 
         // ============================End Biodata Related API=====================
 
