@@ -133,6 +133,19 @@ async function run() {
             let result = await userCollections.find().toArray();
             res.send(result);
         })
+
+        //Make a user to Admin
+        app.patch('/user/admin/:email',async (req, res) => {
+            let email = req.params.email;
+            let query = { email: email };
+            let updatedDoc = {
+              $set: {
+                role: 'admin'
+              }
+            }
+            let result = await userCollections.updateOne(query, updatedDoc);
+            res.send(result)
+          })
         // ================================End User Related API==========================
 
 
