@@ -83,15 +83,14 @@ async function run() {
         //     next();
         // }
 
-
-        //jwt related api
+        // =================================JWT Related API👇===============================
         app.post('/jwt', async (req, res) => {
             let user = req.body;
             let token = jwt.sign(user, process.env.ACCESS_TOKEN_PASS, { expiresIn: '1h' });
             res.send({ token })
         })
 
-        // ===============================Check Admin===================================
+        // ===============================Check Admin👇===================================
         app.get('/users/admin/:email', verifyToken, async (req, res) => {
             let userEmail = req.params.email;
             if (userEmail !== req.decoded.email) {
@@ -105,7 +104,7 @@ async function run() {
             }
             res.send({ admin });
         })
-        // ===============================Check Premium=================================
+        // ===============================Check Premium👇=================================
         app.get('/users/premium/:email', async (req, res) => {
             let userEmail = req.params.email;
             let query = { email: userEmail };
@@ -165,7 +164,7 @@ async function run() {
 
 
 
-        // ================================Biodata Related API==========================
+        // ================================Biodata Related API👇==========================
         // Edit Biodata section
         app.patch('/edit-biodata/:email', async (req, res) => {
             let email = req.params.email;
@@ -288,7 +287,7 @@ async function run() {
             res.send(result);
         })
 
-        // ============================End Biodata Related API=====================
+        // ============================End Biodata Related API👆=====================
 
 
 
@@ -296,7 +295,7 @@ async function run() {
 
 
 
-        // ============================Premium Acount Related API===================
+        // ============================Premium Acount Related API👇===================
         // Request for premium
         app.post('/makePremiumRequest/:email', async (req, res) => {
             let email = req.params.email;
@@ -324,7 +323,7 @@ async function run() {
             let result = await premiumRequestCollections.deleteOne(query);
             res.send(result);
         })
-        // ============================End Premium Acount Related API===================
+        // ============================End Premium Acount Related API👆===================
 
 
 
@@ -372,6 +371,8 @@ async function run() {
         })
         // =========================End Of SuccessStory Related Api👆============================
 
+
+
         // =========================Payment Related API Start👇=========================================
         //create payment intent
         app.post("/create-payment-intent", async (req, res) => {
@@ -386,6 +387,23 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
+        });
+
+        //Admin Status for Show status in Admin Home
+        app.get('/admin-stats', async (req, res) => {
+            let orders = await paymentCollections.estimatedDocumentCount();
+            let result = await paymentCollections.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: {
+                            $sum: '$price'
+                        }
+                    }
+                }
+            ]).toArray();
+            let revenue = result.length > 0 ? result[0].totalRevenue : 0;
+            res.send({ revenue, orders })
         });
         // =========================End of Payment Related API👆========================================
 
@@ -451,11 +469,6 @@ async function run() {
         });
 
         // ================================End Of Requested User Related API👆============================
-
-
-
-
-
 
 
 
