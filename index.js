@@ -105,8 +105,11 @@ async function run() {
             res.send({ admin });
         })
         // ===============================Check Premium👇=================================
-        app.get('/users/premium/:email', async (req, res) => {
+        app.get('/users/premium/:email', verifyToken, async (req, res) => {
             let userEmail = req.params.email;
+            if (userEmail !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
             let query = { email: userEmail };
             let user = await biodataCollections.findOne(query);
             let premium = false;
@@ -137,13 +140,13 @@ async function run() {
         });
 
         // Load All User for Admin 
-        app.get('/allUser', async (req, res) => {
+        app.get('/allUser', verifyToken, verifyAdmin, async (req, res) => {
             let result = await userCollections.find().toArray();
             res.send(result);
         })
 
         //Make a user to Admin
-        app.patch('/user/admin/:email', async (req, res) => {
+        app.patch('/user/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
             let email = req.params.email;
             let query = { email: email };
             let updatedDoc = {
@@ -166,7 +169,7 @@ async function run() {
 
         // ================================Biodata Related API👇==========================
         // Edit Biodata section
-        app.patch('/edit-biodata/:email', async (req, res) => {
+        app.patch('/edit-biodata/:email', verifyToken, async (req, res) => {
             let email = req.params.email;
             let biodata = req.body;
             const options = { upsert: true };
@@ -231,7 +234,7 @@ async function run() {
         })
 
         //Goto View ProfilePage
-        app.get('/biodata/profile/:id', async (req, res) => {
+        app.get('/biodata/profile/:id', verifyToken, async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
             let result = await biodataCollections.findOne(query);
@@ -239,8 +242,11 @@ async function run() {
         })
 
         //View biodata in Dashboard section
-        app.get('/viewBiodata', async (req, res) => {
+        app.get('/viewBiodata', verifyToken, async (req, res) => {
             let email = req.query.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
             let query = { email: email };
             let result = await biodataCollections.findOne(query);
             res.send(result);
@@ -260,7 +266,7 @@ async function run() {
         });
 
         // Make Acount Premium
-        app.patch('/biodata/premium/:email', async (req, res) => {
+        app.patch('/biodata/premium/:email', verifyToken, verifyAdmin, async (req, res) => {
             let email = req.params.email;
             let query = { email: email };
             let updatedDoc = {
@@ -273,21 +279,25 @@ async function run() {
         });
 
         //load biodata for going checkout page
-        app.get('/checkout/:id', async (req, res) => {
+        app.get('/checkout/:id', verifyToken, async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
             let result = await biodataCollections.findOne(query);
             res.send(result);
         });
 
-        app.get('/biodata/checkout/:email', async (req, res) => {
+        app.get('/biodata/checkout/:email', verifyToken, async (req, res) => {
             let email = req.params.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
             let query = { email: email };
             let result = await biodataCollections.findOne(query);
             res.send(result);
         })
 
 
+        //Get all Biodata collection for pagination (biodatas)
         app.get('/allBiodataCollection', async (req, res) => {
             let currentPage = parseInt(req.query.page);
             let page = currentPage;
@@ -307,8 +317,11 @@ async function run() {
 
         // ============================Premium Acount Related API👇===================
         // Request for premium
-        app.post('/makePremiumRequest/:email', async (req, res) => {
+        app.post('/makePremiumRequest/:email', verifyToken, async (req, res) => {
             let email = req.params.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
             let query = { Email: email };
             let existingReq = await premiumRequestCollections.findOne(query);
             if (existingReq) {
@@ -322,12 +335,13 @@ async function run() {
         })
 
         // Load All requested premium user(for admin)
-        app.get('/premiumReqUser', async (req, res) => {
+        app.get('/premiumReqUser', verifyToken, verifyAdmin, async (req, res) => {
             let result = await premiumRequestCollections.find().toArray();
             res.send(result);
         })
+
         //Delete Premium Request
-        app.delete('/premiumReqDelete/:email', async (req, res) => {
+        app.delete('/premiumReqDelete/:email', verifyToken, verifyAdmin, async (req, res) => {
             let email = req.params.email;
             let query = { Email: email };
             let result = await premiumRequestCollections.deleteOne(query);
@@ -340,22 +354,25 @@ async function run() {
 
         // ============================Favorite Related API👇===================
         //Add to favorite item
-        app.post('/favorite', async (req, res) => {
+        app.post('/favorite', verifyToken, async (req, res) => {
             let favoriteBio = req.body;
             let result = await favoriteCollections.insertOne(favoriteBio);
             res.send(result)
         })
 
         //Load my Favorite Biodata
-        app.get('/favoriteBioData/:email', async (req, res) => {
+        app.get('/favoriteBioData/:email', verifyToken, async (req, res) => {
             let email = req.params.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
             let query = { Email: email };
             let result = await favoriteCollections.find(query).toArray();
             res.send(result);
         });
 
         //Delete from Favorite Biodata
-        app.delete('/favoriteDelete/:id', async (req, res) => {
+        app.delete('/favoriteDelete/:id', verifyToken, async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
             let result = await favoriteCollections.deleteOne(query);
@@ -368,7 +385,7 @@ async function run() {
         // =============================SuccessStory Related Api👇===============================
 
         //Add Success story
-        app.post('/successStory', async (req, res) => {
+        app.post('/successStory', verifyToken, async (req, res) => {
             let successStory = req.body;
             let result = await reviewCollections.insertOne(successStory);
             res.send(result);
@@ -383,7 +400,7 @@ async function run() {
 
 
 
-        // =========================Payment Related API Start👇=========================================
+        // ====================Payment Related API Start👇=========================================
         //create payment intent
         app.post("/create-payment-intent", async (req, res) => {
             const { price } = req.body;
@@ -400,7 +417,7 @@ async function run() {
         });
 
         //Admin Status for Show status in Admin Home
-        app.get('/admin-stats', async (req, res) => {
+        app.get('/admin-stats', verifyToken, verifyAdmin, async (req, res) => {
             let orders = await paymentCollections.estimatedDocumentCount();
             let result = await paymentCollections.aggregate([
                 {
@@ -415,16 +432,16 @@ async function run() {
             let revenue = result.length > 0 ? result[0].totalRevenue : 0;
             res.send({ revenue, orders })
         });
-        // =========================End of Payment Related API👆========================================
+        // ====================End of Payment Related API👆========================================
 
 
 
 
 
 
-        // ============================Requested Contact Related API👇====================================
+        // ======================Requested Contact Related API👇====================================
         //post request data into database with payment
-        app.post('/payment', async (req, res) => {
+        app.post('/payment', verifyToken, async (req, res) => {
             let contactRequest = req.body;
             let payment = {
                 price: contactRequest?.price,
@@ -437,21 +454,24 @@ async function run() {
         });
 
         //load myRequestedUser in MyRequested User
-        app.get('/myRequestedUser/:email', async (req, res) => {
+        app.get('/myRequestedUser/:email', verifyToken, async (req, res) => {
             let email = req.params.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidded access' })
+            }
             let query = { userEmail: email };
             let result = await contactReqCollections.find(query).toArray();
             res.send(result);
         });
 
         //Load All Requested User for Admin
-        app.get('/allRequestedUser', async (req, res) => {
+        app.get('/allRequestedUser', verifyToken, verifyAdmin, async (req, res) => {
             let result = await contactReqCollections.find().toArray();
             res.send(result);
         });
 
         // Update the Contact information from Admin
-        app.patch('/requestedUser/approve/:id', async (req, res) => {
+        app.patch('/requestedUser/approve/:id', verifyToken, verifyAdmin, async (req, res) => {
             let id = req.params.id;
             let query1 = { _id: new ObjectId(id) };
             let requestedUser = await contactReqCollections.findOne(query1);
@@ -471,14 +491,14 @@ async function run() {
         });
 
         //Delete Requested User
-        app.delete('/requestedUser/delete/:id', async (req, res) => {
+        app.delete('/requestedUser/delete/:id', verifyToken, async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
             let result = await contactReqCollections.deleteOne(query);
             res.send(result);
         });
 
-        // ================================End Of Requested User Related API👆============================
+        // =========================End Of Requested User Related API👆============================
 
 
 
