@@ -392,7 +392,7 @@ async function run() {
 
 
 
-        
+
 
         // ============================Requested Contact Related API👇====================================
         //post request data into database with payment
@@ -415,6 +415,41 @@ async function run() {
             let result = await contactReqCollections.find(query).toArray();
             res.send(result);
         });
+
+        //Load All Requested User for Admin
+        app.get('/allRequestedUser', async (req, res) => {
+            let result = await contactReqCollections.find().toArray();
+            res.send(result);
+        });
+
+        // Update the Contact information from Admin
+        app.patch('/requestedUser/approve/:id', async (req, res) => {
+            let id = req.params.id;
+            let query1 = { _id: new ObjectId(id) };
+            let requestedUser = await contactReqCollections.findOne(query1);
+            let biodataId = requestedUser.reqBioId;
+            let query2 = { bioId: biodataId };
+            let biodata = await biodataCollections.findOne(query2);
+            console.log(biodata);
+            let updatedDoc = {
+                $set: {
+                    status: "Approved",
+                    reqEmail: biodata?.email,
+                    reqPhone: biodata?.Mobile
+                }
+            }
+            let result = await contactReqCollections.updateOne(query1, updatedDoc);
+            res.send(result);
+        });
+
+        //Delete Requested User
+        app.delete('/requestedUser/delete/:id', async (req, res) => {
+            let id = req.params.id;
+            let query = { _id: new ObjectId(id) };
+            let result = await contactReqCollections.deleteOne(query);
+            res.send(result);
+        });
+
         // ================================End Of Requested User Related API👆============================
 
 
