@@ -287,6 +287,16 @@ async function run() {
             res.send(result);
         })
 
+
+        app.get('/allBiodataCollection', async (req, res) => {
+            let currentPage = parseInt(req.query.page);
+            let page = currentPage;
+            let result = await biodataCollections.find()
+                .skip(page * 5)
+                .limit(5)
+                .toArray();
+            res.send(result);
+        })
         // ============================End Biodata Related API👆=====================
 
 
