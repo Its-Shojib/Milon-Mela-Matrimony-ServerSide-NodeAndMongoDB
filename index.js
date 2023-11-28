@@ -234,7 +234,7 @@ async function run() {
         })
 
         //Goto View ProfilePage
-        app.get('/biodata/profile/:id', verifyToken, async (req, res) => {
+        app.get('/biodata/profile/:id', async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
             let result = await biodataCollections.findOne(query);
@@ -279,7 +279,7 @@ async function run() {
         });
 
         //load biodata for going checkout page
-        app.get('/checkout/:id', verifyToken, async (req, res) => {
+        app.get('/checkout/:id', async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
             let result = await biodataCollections.findOne(query);
@@ -302,8 +302,8 @@ async function run() {
             let currentPage = parseInt(req.query.page);
             let page = currentPage;
             let result = await biodataCollections.find()
-                .skip(page * 5)
-                .limit(5)
+                .skip(page * 20)
+                .limit(20)
                 .toArray();
             res.send(result);
         })
