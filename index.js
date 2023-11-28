@@ -6,6 +6,7 @@ require('dotenv').config()
 let cors = require('cors')
 let cookieParser = require('cookie-parser')
 let jwt = require('jsonwebtoken');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors({
     origin: [
@@ -37,6 +38,7 @@ async function run() {
         const reviewCollections = client.db("Milon-Mela-DB").collection('Reviews');
         const favoriteCollections = client.db("Milon-Mela-DB").collection('Favorites');
         const paymentCollections = client.db("Milon-Mela-DB").collection('Payments');
+        const contactReqCollections = client.db("Milon-Mela-DB").collection('ContactReq');
         const biodataCollections = client.db("Milon-Mela-DB").collection('Biodatas');
         const premiumRequestCollections = client.db("Milon-Mela-DB").collection('PremiumReq');
 
@@ -368,10 +370,61 @@ async function run() {
             let result = await reviewCollections.find().sort({ marrigeInDays: 1 }).toArray();
             res.send(result);
         })
-
-
-
         // =========================End Of SuccessStory Related Api👆============================
+
+        // =========================Payment Related API Start👇=========================================
+        //create payment intent
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+            let amount = parseInt(price * 100);
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ['card']
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+        // =========================End of Payment Related API👆========================================
+
+
+
+
+        
+
+        // ============================Requested Contact Related API👇====================================
+        //post request data into database with payment
+        app.post('/payment', async (req, res) => {
+            let contactRequest = req.body;
+            let payment = {
+                price: contactRequest?.price,
+                email: contactRequest?.userEmail,
+                reqBio: contactRequest?.reqBioId,
+            }
+            let paymentSuccess = await paymentCollections.insertOne(payment);
+            let result = await contactReqCollections.insertOne(contactRequest);
+            res.send(result);
+        });
+
+        //load myRequestedUser in MyRequested User
+        app.get('/myRequestedUser/:email', async (req, res) => {
+            let email = req.params.email;
+            let query = { userEmail: email };
+            let result = await contactReqCollections.find(query).toArray();
+            res.send(result);
+        });
+        // ================================End Of Requested User Related API👆============================
+
+
+
+
+
+
+
+
+
 
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
