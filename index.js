@@ -43,7 +43,6 @@ async function run() {
         const premiumRequestCollections = client.db("Milon-Mela-DB").collection('PremiumReq');
 
 
-
         // middlewares verify token
         const verifyToken = (req, res, next) => {
             console.log('inside verify token', req.headers.authorization);
