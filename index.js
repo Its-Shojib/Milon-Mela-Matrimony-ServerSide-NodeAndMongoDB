@@ -122,9 +122,6 @@ async function run() {
 
 
 
-
-
-
         // ================================User Related API👇=============================
         // Create new user
         app.post('/users', async (req, res) => {
