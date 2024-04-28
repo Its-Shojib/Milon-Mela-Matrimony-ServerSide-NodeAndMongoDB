@@ -102,7 +102,9 @@ async function run() {
                 admin = user?.role === 'admin'
             }
             res.send({ admin });
-        })
+        });
+
+
         // ===============================Check Premium👇=================================
         app.get('/users/premium/:email', verifyToken, async (req, res) => {
             let userEmail = req.params.email;
@@ -116,9 +118,7 @@ async function run() {
                 premium = user?.role === 'premium'
             }
             res.send({ premium });
-        })
-
-
+        });
 
 
 
@@ -139,7 +139,7 @@ async function run() {
         app.get('/allUser', verifyToken, verifyAdmin, async (req, res) => {
             let result = await userCollections.find().toArray();
             res.send(result);
-        })
+        });
 
         //Make a user to Admin
         app.patch('/user/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
@@ -152,7 +152,7 @@ async function run() {
             }
             let result = await userCollections.updateOne(query, updatedDoc);
             res.send(result)
-        })
+        });
         // ================================End of User Related API👆==========================
 
 
@@ -227,7 +227,7 @@ async function run() {
                 let result = await biodataCollections.updateOne(query, updatedDoc2, options);
                 res.send(result);
             }
-        })
+        });
 
         //Goto View ProfilePage
         app.get('/biodata/profile/:id', async (req, res) => {
@@ -235,7 +235,7 @@ async function run() {
             let query = { _id: new ObjectId(id) };
             let result = await biodataCollections.findOne(query);
             res.send(result)
-        })
+        });
 
         //View biodata in Dashboard section
         app.get('/viewBiodata', verifyToken, async (req, res) => {
