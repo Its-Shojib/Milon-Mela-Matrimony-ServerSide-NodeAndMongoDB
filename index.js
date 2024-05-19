@@ -70,17 +70,6 @@ async function run() {
             }
             next();
         }
-        // use verify Premium after verifyToken
-        // const verifyPremium = async (req, res, next) => {
-        //     const email = req.decoded.email;
-        //     const query = { email: email };
-        //     const user = await biodataCollections.findOne(query);
-        //     const isPremium = user?.role === 'premium';
-        //     if (!isPremium) {
-        //         return res.status(403).send({ message: 'forbidden access' });
-        //     }
-        //     next();
-        // }
 
         // =================================JWT Related API👇===============================
         app.post('/jwt', async (req, res) => {
@@ -154,13 +143,6 @@ async function run() {
             res.send(result)
         });
         // ================================End of User Related API👆==========================
-
-
-
-
-
-
-
 
 
         // ================================Biodata Related API👇==========================
@@ -292,7 +274,6 @@ async function run() {
             res.send(result);
         })
 
-
         //Get all Biodata collection for pagination (biodatas)
         app.get('/allBiodataCollection', async (req, res) => {
             let currentPage = parseInt(req.query.page);
@@ -303,12 +284,7 @@ async function run() {
                 .toArray();
             res.send(result);
         })
-        
         // ============================End Biodata Related API👆=====================
-
-
-
-
 
 
         // ============================Premium Acount Related API👇===================
@@ -344,9 +320,6 @@ async function run() {
             res.send(result);
         })
         // ============================End Premium Acount Related API👆===================
-
-
-
 
         // ============================Favorite Related API👇===================
         //Add to favorite item
@@ -429,11 +402,6 @@ async function run() {
             res.send({ revenue, orders })
         });
         // ====================End of Payment Related API👆========================================
-
-
-
-
-
 
         // ======================Requested Contact Related API👇====================================
         //post request data into database with payment
